@@ -39,6 +39,16 @@ interface LocalForageDriver {
     setItem(key: string, value: any, callback: (err: any, value: any) => void): void;
 }
 
+interface LocalForageSerializer {
+    serialize<T>(value: T | ArrayBuffer | Blob, callback: (value: string, error: any) => {}): void;
+
+    deserialize<T>(value: string): T | ArrayBuffer | Blob;
+
+    stringToBuffer(serializedString: string): ArrayBuffer;
+
+    bufferToString(buffer: ArrayBuffer): string;
+}
+
 interface LocalForage {
     LOCALSTORAGE: string;
     WEBSQL: string;
@@ -50,9 +60,15 @@ interface LocalForage {
     * @param {ILocalForageConfig} options?
     */
     config(options: LocalForageOptions): boolean;
+
+    /**
+     * Create a new instance of localForage to point to a different store.
+     * All the configuration options used by config are supported.
+     * @param {LocalForageOptions} options
+     */
     createInstance(options: LocalForageOptions): LocalForage;
 
-    driver(): LocalForageDriver;
+    driver(): string;
     /**
     * Force usage of a particular driver or drivers, if available.
     * @param {string} driver
@@ -61,6 +77,11 @@ interface LocalForage {
     setDriver(driver: string | string[], callback: () => void, errorCallback: (error: any) => void): void;
     defineDriver(driver: LocalForageDriver): Promise<void>;
     defineDriver(driver: LocalForageDriver, callback: () => void, errorCallback: (error: any) => void): void;
+
+    getSerializer(): Promise<LocalForageSerializer>;
+    getSerializer(callback: (serializer: LocalForageSerializer) => void): void;
+
+    supports(driverName: string): boolean;
 
     getItem<T>(key: string): Promise<T>;
     getItem<T>(key: string, callback: (err: any, value: T) => void): void;
@@ -89,6 +110,6 @@ interface LocalForage {
 }
 
 declare module "localforage" {
-    export var localforage: LocalForage;
-	export default localforage;
+    let localforage: LocalForage;
+    export = localforage;
 }
